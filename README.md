@@ -7,6 +7,12 @@
 Implements methods for CurseForge API usage
 
 
+## Installation
+
+```javascript
+  npm install curseforge-core-api
+```
+
 ## Deployment
 
 To import all functions use
