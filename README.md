@@ -73,7 +73,7 @@ await ModsApi.getMod({
   modId: 642
 })
 
-//Parameter fileId and parameters is optional
+//Parameter fileId and parameters are optional
 await ModsApi.getModFile({
   modId: 642,
   fileId: 32123,
