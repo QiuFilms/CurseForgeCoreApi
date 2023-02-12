@@ -1,12 +1,16 @@
 {
   "name": "curseforge-core-api",
-  "version": "1.0.5",
+  "version": "1.0.62",
   "description": "",
   "main": "index.js",
   "author": "qiufilms",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/QiuFilms/CurseForgeCoreApi"
+  },
   "dependencies": {
-    "curseforge-core-api": "^1.0.2",
+    "curseforge-core-api": "^1.0.6",
     "node-fetch": "^3.3.0"
   }
 }

@@ -2,13 +2,13 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 const { URLSearchParams } = require('url')
 
 class CurseForgeApi{
-    constructor(api_key){
+    constructor({api_key}){
         this.gameId = 432
         this.baseUrl = "https://api.curseforge.com"
         this.headers = {
             'Content-Type':'application/json',
             'Accept':'application/json',
-            'x-api-key':api_key.api_key
+            'x-api-key':api_key
           };
     }
 

@@ -40,7 +40,9 @@ To import all functions use
 
 ```javascript
 const { CurseForgeApi, CurseForgeGamesIDs, CurseForgeMcModLoader } = require("curseforge-core-api");
-const ModsApi = new CurseForgeApi(API-KEY)
+const ModsApi = new CurseForgeApi({
+  api_key:"YOUR_API_KEY"
+})
 
 
 //Usage with top level await
@@ -74,7 +76,7 @@ await ModsApi.getMod({
 //Parameter fileId and parameters is optional
 await ModsApi.getModFile({
   modId: 642,
-  fileId: 32123.
+  fileId: 32123,
   parameters: {
     gameVersion: "1.19.2",
     modLoaderType: CurseForgeMcModLoader.Forge
