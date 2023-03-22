@@ -12,34 +12,31 @@ class CurseForgeApi{
           };
     }
 
-    async getGames(){        
-        return fetch(`${this.baseUrl}/v1/games`, {method: 'GET', headers: this.headers})
+    async getGames(){
+        return fetch(new URL("/v1/games", this.baseUrl).toString(), {method: 'GET', headers: this.headers})
         .then((res) => {
             return res.json();
         })
     }
 
-    async getGame({gameId}){        
-        const game = await fetch(`${this.baseUrl}/v1/games/${gameId}`, {method: 'GET', headers: this.headers})
-        .then((res) => {
-            return res.json();
-        })
+    async getGame({gameId}){  
+        const promises = [
+            fetch(new URL(`/v1/games/${gameId}`, this.baseUrl).toString(), {method: 'GET', headers: this.headers}),
+            fetch(new URL(`/v1/games/${gameId}/versions`, this.baseUrl).toString(), {method: 'GET', headers: this.headers}),
+            fetch(new URL(`/v1/games/${gameId}/version-types`, this.baseUrl).toString(), {method: 'GET', headers: this.headers})
+        ]
 
-        const versions = await fetch(`${this.baseUrl}/v1/games/${gameId}/versions`, {method: 'GET', headers: this.headers})
-        .then((res) => {
-            return res.json();
-        })
+        const [game, versions, versionTypes] = await Promise.allSettled(promises).then(results => results)
 
-        const versionTypes = await fetch(`${this.baseUrl}/v1/games/${gameId}/version-types`, {method: 'GET', headers: this.headers})
-        .then((res) => {
-            return res.json();
-        })
-
-        return {game, versions, versionTypes}
+        return {
+            game: await game.value.json(),
+            versions: await versions.value.json(),
+            versionTypes: await versionTypes.value.json()
+        }
     }
 
     async getCategories({gameId}){
-        return fetch(`${this.baseUrl}/v1/categories?gameId=${gameId}`, {method: 'GET', headers: this.headers})
+        return fetch(new URL(`/v1/categories?gameId=${gameId}`, this.baseUrl).toString(), {method: 'GET', headers: this.headers})
         .then((res) => {
             return res.json();
         })
@@ -47,14 +44,15 @@ class CurseForgeApi{
 
 
     async searchMods(parameters){
-        const paramsObj = new URLSearchParams()
+        const url = new URL(`/v1/mods/search`, this.baseUrl)
+
         for (const [key, value] of Object.entries(parameters)) {
             if(typeof value !== "undefined" || value !== ""){
-                paramsObj.append(key,value)
+                url.searchParams.set(key, value)
             }
         }
 
-        return fetch(`${this.baseUrl}/v1/mods/search?` + paramsObj.toString(), {method: 'GET', headers: this.headers})
+        return fetch(url.toString(), {method: 'GET', headers: this.headers})
         .then((res) => {
             return res.json();
         })
@@ -62,34 +60,110 @@ class CurseForgeApi{
 
 
     async getMod({modId}){
-        const mod = await fetch(`${this.baseUrl}/v1/mods/${modId}`, {method: 'GET', headers: this.headers, body:JSON.stringify(parameters)})
-        .then((res) => {
-            return res.json();
-        })
+        const promises = [
+            fetch(new URL(`/v1/mods/${modId}`, this.baseUrl).toString(), {method: 'GET', headers: this.headers}),
+            fetch(new URL(`/v1/mods/${modId}/description`, this.baseUrl).toString(), {method: 'GET', headers: this.headers})
+        ]
+        const [mod, description] = await Promise.allSettled(promises).then(results => results)
 
-        const description = await fetch(`${this.baseUrl}/v1/mods/${modId}/description`, {method: 'GET', headers: this.headers})
-        .then((res) => {
-            return res.json();
-        })
-
-        return {mod, description}
+        return {
+            mod: await mod.value.json(),
+            description: await description.value.json(),
+        }
     }
 
-    async getModFile({modId, fileId = "", parameters = {}}){
-        const paramsObj = new URLSearchParams()
+    async getMods({modIds}){
+        const body = {
+            modIds: modIds
+        }
+
+        return fetch(new URL(`/v1/mods`, this.baseUrl).toString(), {method: 'POST', headers: this.headers, body:JSON.stringify(body)})
+        .then((res) => {
+            return res.json();
+        })
+    }
+
+    async getFeaturedMods({gameId, excludedModIds, gameVersionTypeId}){
+        const body = {
+            gameId: gameId,
+            excludedModIds: excludedModIds,
+            gameVersionTypeId: gameVersionTypeId
+        }
+
+        return fetch(new URL(`/v1/mods/featured`, this.baseUrl).toString(), {method: 'POST', headers: this.headers, body:JSON.stringify(body)})
+        .then((res) => {
+            return res.json();
+        })
+    }
+
+    async getModFile({modId, fileId}){
+        const url = new URL(`/v1/mods/${modId}/files/${fileId}`, this.baseUrl)
+
+        const promises = [
+            fetch(url.toString(), {method: 'GET', headers: this.headers}),
+            fetch(new URL(`/changelog`,url).toString(), {method: 'GET', headers: this.headers}),
+            fetch(new URL(`/download-url`,url).toString(), {method: 'GET', headers: this.headers})
+        ]
+
+        const [modFile, changelog, downloadUrl] = await Promise.allSettled(promises).then(results => results)
+
+        return {
+            modFile: await modFile.value.json(),
+            changelog: await changelog.value.json(),
+            downloadUrl: await downloadUrl.value.json()
+        }
+    }
+
+
+    async getModFiles({modId, parameters = {}}){
+        const url = new URL(`/v1/mods/${modId}/files`, this.baseUrl)
+
         for (const [key, value] of Object.entries(parameters)) {
             if(typeof value !== "undefined" || value !== ""){
-                paramsObj.append(key,value)
+                url.searchParams.set(key, value)
             }
         }
-        return fetch(`${this.baseUrl}/v1/mods/${modId}/files${fileId != "" ? "/"+fileId: ""}?` + paramsObj.toString(), {method: 'GET', headers: this.headers})
+        return fetch(url.toString(), {method: 'GET', headers: this.headers})
         .then((res) => {
             return res.json();
         })
     }
 
-    async getVersions({version = ""}){
-        return fetch(`${this.baseUrl}/v1/minecraft/version/${version}`, {method: 'GET', headers: this.headers})
+    async getModsFiles({fileIds}){
+        const body = {
+            fileIds: fileIds
+        }
+
+        return fetch(new URL(`/v1/mods/files`, this.baseUrl), {method: 'POST', headers: this.headers, body:JSON.stringify(body)})
+        .then((res) => {
+            return res.json();
+        })
+    }
+
+    async getVersions({version = "", parameters = {}}){
+        const url = new URL(`/v1/minecraft/version/${version}`, this.baseUrl)
+
+        for (const [key, value] of Object.entries(parameters)) {
+            if(typeof value !== "undefined" || value !== ""){
+                url.searchParams.set(key, value)
+            }
+        }
+        return fetch(url.toString(), {method: 'GET', headers: this.headers})
+        .then((res) => {
+            return res.json();
+        })
+    }
+
+    async getModLoaders({modloader = "", parameters = {}}){
+        const url = new URL(`/v1/minecraft/modloader/${modloader}`, this.baseUrl)
+
+        for (const [key, value] of Object.entries(parameters)) {
+            if(typeof value !== "undefined" || value !== ""){
+                url.searchParams.set(key, value)
+            }
+        }
+
+        return fetch(url.toString(), {method: 'GET', headers: this.headers})
         .then((res) => {
             return res.json();
         })
