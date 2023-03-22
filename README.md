@@ -1,7 +1,6 @@
 
 # CurseForge API (Eternal API)
-
-**Implements methods for CurseForge API usage**
+Implements methods for CurseForge API usage
 
 Package is in development
 
