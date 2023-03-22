@@ -87,7 +87,7 @@ const mods = await ModsApi.getMods({
 
 
 const featuredMods = await ModsApi.getFeaturedMods({
-  gameId: 432,
+  gameId: CurseForgeGamesIDs.Minecraft,
   excludedModIds = [642, 324, 657],
   gameVersionTypeId: 12
 })
