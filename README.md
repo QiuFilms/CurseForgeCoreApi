@@ -1,10 +1,10 @@
 
 # CurseForge API (Eternal API)
 
+**Implements methods for CurseForge API usage**
 
 Package is in development
 
-**Implements methods for CurseForge API usage**
 
 
 ## Installation
