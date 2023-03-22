@@ -1,6 +1,6 @@
 {
   "name": "curseforge-core-api",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "",
   "main": "index.js",
   "author": "qiufilms",
@@ -10,7 +10,6 @@
     "url": "https://github.com/QiuFilms/CurseForgeCoreApi"
   },
   "dependencies": {
-    "curseforge-core-api": "^1.0.6",
     "node-fetch": "^3.3.1"
   }
 }

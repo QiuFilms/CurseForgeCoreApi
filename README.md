@@ -2,7 +2,7 @@
 # CurseForge API (Eternal API)
 Implements methods for CurseForge API usage
 
-Package is in development
+Package is still in development
 
 
 
