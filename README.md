@@ -80,7 +80,6 @@ const {mod, description} = await ModsApi.getMod({
   modId: 642
 })
 
-<<<<<<< HEAD
 
 const mods = await ModsApi.getMods({
   modIds: [642, 324, 657]
@@ -103,10 +102,6 @@ const {modFile, changelog, downloadUrl} = await ModsApi.getModFile({
 //Parameter fileId add parameters is optional
 //All available parameters https://docs.curseforge.com/#get-mod-files
 const modFiles = await ModsApi.getModFiles({
-=======
-//Parameter fileId and parameters are optional
-await ModsApi.getModFile({
->>>>>>> a8f2cf4e8f43ad569b970078e1bbab16f5a8a8a0
   modId: 642,
   parameters: {
     gameVersion: "1.19.2",
