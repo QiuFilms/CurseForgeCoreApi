@@ -2,8 +2,8 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 const { URLSearchParams } = require('url')
 
 class CurseForgeApi{
-    constructor({api_key}){
-        this.gameId = 432
+    constructor({api_key, gameId = ""}){
+        this.gameId = gameId
         this.baseUrl = "https://api.curseforge.com"
         this.headers = {
             'Content-Type':'application/json',
@@ -19,15 +19,15 @@ class CurseForgeApi{
         })
     }
 
-    async getGame({gameId}){  
+    async getGame({gameId = this.gameId} = {}){  
+        console.log(gameId);
         const promises = [
             fetch(new URL(`/v1/games/${gameId}`, this.baseUrl).toString(), {method: 'GET', headers: this.headers}),
             fetch(new URL(`/v1/games/${gameId}/versions`, this.baseUrl).toString(), {method: 'GET', headers: this.headers}),
             fetch(new URL(`/v1/games/${gameId}/version-types`, this.baseUrl).toString(), {method: 'GET', headers: this.headers})
         ]
 
-        const [game, versions, versionTypes] = await Promise.allSettled(promises).then(results => results)
-
+        const [game, versions, versionTypes] = await Promise.allSettled(promises)
         return {
             game: await game.value.json(),
             versions: await versions.value.json(),
@@ -35,7 +35,8 @@ class CurseForgeApi{
         }
     }
 
-    async getCategories({gameId}){
+    async getCategories({gameId = this.gameId} = {}){
+
         return fetch(new URL(`/v1/categories?gameId=${gameId}`, this.baseUrl).toString(), {method: 'GET', headers: this.headers})
         .then((res) => {
             return res.json();
@@ -64,7 +65,7 @@ class CurseForgeApi{
             fetch(new URL(`/v1/mods/${modId}`, this.baseUrl).toString(), {method: 'GET', headers: this.headers}),
             fetch(new URL(`/v1/mods/${modId}/description`, this.baseUrl).toString(), {method: 'GET', headers: this.headers})
         ]
-        const [mod, description] = await Promise.allSettled(promises).then(results => results)
+        const [mod, description] = await Promise.allSettled(promises)
 
         return {
             mod: await mod.value.json(),
@@ -83,7 +84,7 @@ class CurseForgeApi{
         })
     }
 
-    async getFeaturedMods({gameId, excludedModIds, gameVersionTypeId}){
+    async getFeaturedMods({gameId = this.gameId, excludedModIds, gameVersionTypeId} = {}){
         const body = {
             gameId: gameId,
             excludedModIds: excludedModIds,
@@ -105,7 +106,7 @@ class CurseForgeApi{
             fetch(new URL(`/download-url`,url).toString(), {method: 'GET', headers: this.headers})
         ]
 
-        const [modFile, changelog, downloadUrl] = await Promise.allSettled(promises).then(results => results)
+        const [modFile, changelog, downloadUrl] = await Promise.allSettled(promises)
 
         return {
             modFile: await modFile.value.json(),

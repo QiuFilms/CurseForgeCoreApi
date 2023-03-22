@@ -45,11 +45,18 @@ To import all functions use
 ## Usage
 
 ```javascript
+
+//Standard initialization
 const { CurseForgeApi, CurseForgeGamesIDs, CurseForgeMcModLoader } = require("curseforge-core-api");
 const ModsApi = new CurseForgeApi({
     api_key: YOUR_API_KEY
 })
 
+//You can also provide gameId to omit it in some used methodes
+const ModsApi = new CurseForgeApi({
+    api_key: YOUR_API_KEY,
+    gameId: CurseForgeGamesIDs.Minecraft
+})
 
 //Usage with top level await
 //The data provided in methods is exemplary
