@@ -1,11 +1,12 @@
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-const { URLSearchParams } = require('url')
 
-class CurseForgeApi{
+class CurseForgeApi{   
+    #headers
+
     constructor({api_key, gameId = ""}){
         this.gameId = gameId
         this.baseUrl = "https://api.curseforge.com"
-        this.headers = {
+        this.#headers = {
             'Content-Type':'application/json',
             'Accept':'application/json',
             'x-api-key':api_key
@@ -13,33 +14,41 @@ class CurseForgeApi{
     }
 
     async getGames(){
-        return fetch(new URL("/v1/games", this.baseUrl).toString(), {method: 'GET', headers: this.headers})
-        .then((res) => {
-            return res.json();
+        return fetch(new URL("/v1/games", this.baseUrl).toString(), {method: 'GET', headers: this.#headers})
+        .then(async (res) => {
+            if(res.status !== 200) throw new Error("Error: Resource does not exist")
+
+            return res.json().then(res => res.data);
         })
     }
 
     async getGame({gameId = this.gameId} = {}){  
-        console.log(gameId);
         const promises = [
-            fetch(new URL(`/v1/games/${gameId}`, this.baseUrl).toString(), {method: 'GET', headers: this.headers}),
-            fetch(new URL(`/v1/games/${gameId}/versions`, this.baseUrl).toString(), {method: 'GET', headers: this.headers}),
-            fetch(new URL(`/v1/games/${gameId}/version-types`, this.baseUrl).toString(), {method: 'GET', headers: this.headers})
+            fetch(new URL(`/v1/games/${gameId}`, this.baseUrl).toString(), {method: 'GET', headers: this.#headers}),
+            fetch(new URL(`/v1/games/${gameId}/versions`, this.baseUrl).toString(), {method: 'GET', headers: this.#headers}),
+            fetch(new URL(`/v1/games/${gameId}/version-types`, this.baseUrl).toString(), {method: 'GET', headers: this.#headers})
         ]
 
-        const [game, versions, versionTypes] = await Promise.allSettled(promises)
+        const [game, versions, versionTypes] = await Promise.allSettled(promises).then(res => {
+            res.forEach(res => {
+                if(res.value.status !== 200) throw new Error("Error: Resource does not exist")
+            })
+            return res
+        })
+
         return {
-            game: await game.value.json(),
-            versions: await versions.value.json(),
-            versionTypes: await versionTypes.value.json()
+            game: (await game.value.json()).data,
+            versions: (await versions.value.json()).data,
+            versionTypes: (await versionTypes.value.json()).data
         }
     }
 
     async getCategories({gameId = this.gameId} = {}){
+        return fetch(new URL(`/v1/categories?gameId=${gameId}`, this.baseUrl).toString(), {method: 'GET', headers: this.#headers})
+        .then(async (res) => {
+            if(res.status !== 200) throw new Error("Error: Resource does not exist")
 
-        return fetch(new URL(`/v1/categories?gameId=${gameId}`, this.baseUrl).toString(), {method: 'GET', headers: this.headers})
-        .then((res) => {
-            return res.json();
+            return res.json().then(res => res.data);
         })
     }
 
@@ -53,23 +62,30 @@ class CurseForgeApi{
             }
         }
 
-        return fetch(url.toString(), {method: 'GET', headers: this.headers})
-        .then((res) => {
-            return res.json();
+        return fetch(url.toString(), {method: 'GET', headers: this.#headers})
+        .then(async (res) => {
+            if(res.status !== 200) throw new Error("Error: Resource does not exist")
+
+            return res.json().then(res => res.data);
         })
     }
 
 
     async getMod({modId}){
         const promises = [
-            fetch(new URL(`/v1/mods/${modId}`, this.baseUrl).toString(), {method: 'GET', headers: this.headers}),
-            fetch(new URL(`/v1/mods/${modId}/description`, this.baseUrl).toString(), {method: 'GET', headers: this.headers})
+            fetch(new URL(`/v1/mods/${modId}`, this.baseUrl).toString(), {method: 'GET', headers: this.#headers}),
+            fetch(new URL(`/v1/mods/${modId}/description`, this.baseUrl).toString(), {method: 'GET', headers: this.#headers})
         ]
-        const [mod, description] = await Promise.allSettled(promises)
+        const [mod, description] = await Promise.allSettled(promises).then(res => {
+            res.forEach(res => {
+                if(res.value.status !== 200) throw new Error("Error: Resource does not exist")
+            })
+            return res
+        })
 
         return {
-            mod: await mod.value.json(),
-            description: await description.value.json(),
+            mod: (await mod.value.json()).data,
+            description: (await description.value.json()).data,
         }
     }
 
@@ -78,9 +94,11 @@ class CurseForgeApi{
             modIds: modIds
         }
 
-        return fetch(new URL(`/v1/mods`, this.baseUrl).toString(), {method: 'POST', headers: this.headers, body:JSON.stringify(body)})
-        .then((res) => {
-            return res.json();
+        return fetch(new URL(`/v1/mods`, this.baseUrl).toString(), {method: 'POST', headers: this.#headers, body:JSON.stringify(body)})
+        .then(async (res) => {
+            if(res.status !== 200) throw new Error("Error: Resource does not exist")
+
+            return res.json().then(res => res.data);
         })
     }
 
@@ -91,27 +109,38 @@ class CurseForgeApi{
             gameVersionTypeId: gameVersionTypeId
         }
 
-        return fetch(new URL(`/v1/mods/featured`, this.baseUrl).toString(), {method: 'POST', headers: this.headers, body:JSON.stringify(body)})
-        .then((res) => {
-            return res.json();
+        return fetch(new URL(`/v1/mods/featured`, this.baseUrl).toString(), {method: 'POST', headers: this.#headers, body:JSON.stringify(body)})
+        .then(async (res) => {
+            if(res.status !== 200) throw new Error("Error: Resource does not exist")
+
+            return res.json().then(res => res.data);
         })
     }
 
-    async getModFile({modId, fileId}){
+    async getModFile({modId, fileId} = {}){
+        if(typeof modId == 'undefined' || typeof fileId == "undefined"){
+            throw new Error("Provide all needed parameters")
+        }
+
         const url = new URL(`/v1/mods/${modId}/files/${fileId}`, this.baseUrl)
 
         const promises = [
-            fetch(url.toString(), {method: 'GET', headers: this.headers}),
-            fetch(new URL(`/changelog`,url).toString(), {method: 'GET', headers: this.headers}),
-            fetch(new URL(`/download-url`,url).toString(), {method: 'GET', headers: this.headers})
+            fetch(url.toString(), {method: 'GET', headers: this.#headers}),
+            fetch(new URL(`/changelog`,url).toString(), {method: 'GET', headers: this.#headers}),
+            fetch(new URL(`/download-url`,url).toString(), {method: 'GET', headers: this.#headers})
         ]
 
-        const [modFile, changelog, downloadUrl] = await Promise.allSettled(promises)
+        const [modFile, changelog, downloadUrl] = await Promise.allSettled(promises).then(res => {
+            res.forEach(res => {
+                if(res.value.status !== 200) throw new Error("Error: Resource does not exist")
+            })
+            return res
+        })
 
         return {
-            modFile: await modFile.value.json(),
-            changelog: await changelog.value.json(),
-            downloadUrl: await downloadUrl.value.json()
+            modFile: (await modFile.value.json()).data,
+            changelog: (await changelog.value.json()).data,
+            downloadUrl: (await downloadUrl.value.json()).data
         }
     }
 
@@ -124,9 +153,11 @@ class CurseForgeApi{
                 url.searchParams.set(key, value)
             }
         }
-        return fetch(url.toString(), {method: 'GET', headers: this.headers})
-        .then((res) => {
-            return res.json();
+        return fetch(url.toString(), {method: 'GET', headers: this.#headers})
+        .then(async (res) => {
+            if(res.status !== 200) throw new Error("Error: Resource does not exist")
+
+            return res.json().then(res => res.data);
         })
     }
 
@@ -135,9 +166,11 @@ class CurseForgeApi{
             fileIds: fileIds
         }
 
-        return fetch(new URL(`/v1/mods/files`, this.baseUrl), {method: 'POST', headers: this.headers, body:JSON.stringify(body)})
-        .then((res) => {
-            return res.json();
+        return fetch(new URL(`/v1/mods/files`, this.baseUrl), {method: 'POST', headers: this.#headers, body:JSON.stringify(body)})
+        .then(async (res) => {
+            if(res.status !== 200) throw new Error("Error: Resource does not exist")
+
+            return res.json().then(res => res.data);
         })
     }
 
@@ -149,9 +182,11 @@ class CurseForgeApi{
                 url.searchParams.set(key, value)
             }
         }
-        return fetch(url.toString(), {method: 'GET', headers: this.headers})
-        .then((res) => {
-            return res.json();
+        return fetch(url.toString(), {method: 'GET', headers: this.#headers})
+        .then(async (res) => {
+            if(res.status !== 200) throw new Error("Error: Resource does not exist")
+
+            return res.json().then(res => res.data);
         })
     }
 
@@ -164,9 +199,11 @@ class CurseForgeApi{
             }
         }
 
-        return fetch(url.toString(), {method: 'GET', headers: this.headers})
-        .then((res) => {
-            return res.json();
+        return fetch(url.toString(), {method: 'GET', headers: this.#headers})
+        .then(async (res) => {
+            if(res.status !== 200) throw new Error("Error: Resource does not exist")
+
+            return res.json().then(res => res.data);
         })
     }
 }
