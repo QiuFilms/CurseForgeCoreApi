@@ -53,8 +53,12 @@ class CurseForgeApi{
     }
 
 
-    async searchMods(parameters){
+    async searchMods(parameters = {}){
         const url = new URL(`/v1/mods/search`, this.baseUrl)
+
+        if(!parameters.hasOwnProperty("gameId")){
+            parameters.gameId = this.gameId
+        }
 
         for (const [key, value] of Object.entries(parameters)) {
             if(typeof value !== "undefined" || value !== ""){
@@ -62,6 +66,7 @@ class CurseForgeApi{
             }
         }
 
+        console.log(url.toString());
         return fetch(url.toString(), {method: 'GET', headers: this.#headers})
         .then(async (res) => {
             if(res.status !== 200) throw new Error("Error: Resource does not exist")
@@ -71,7 +76,9 @@ class CurseForgeApi{
     }
 
 
-    async getMod({modId}){
+    async getMod({modId} = {}){
+        if(typeof modId === "undefined") throw new Error("Provide modId")
+        
         const promises = [
             fetch(new URL(`/v1/mods/${modId}`, this.baseUrl).toString(), {method: 'GET', headers: this.#headers}),
             fetch(new URL(`/v1/mods/${modId}/description`, this.baseUrl).toString(), {method: 'GET', headers: this.#headers})
@@ -89,7 +96,9 @@ class CurseForgeApi{
         }
     }
 
-    async getMods({modIds}){
+    async getMods({modIds} = {}){
+        if(typeof modIds === "undefined") throw new Error("Provide modIds")
+
         const body = {
             modIds: modIds
         }
@@ -146,6 +155,8 @@ class CurseForgeApi{
 
 
     async getModFiles({modId, parameters = {}}){
+        if(typeof modId === "undefined") throw new Error("Provide modId")
+
         const url = new URL(`/v1/mods/${modId}/files`, this.baseUrl)
 
         for (const [key, value] of Object.entries(parameters)) {
@@ -161,7 +172,9 @@ class CurseForgeApi{
         })
     }
 
-    async getModsFiles({fileIds}){
+    async getModsFiles({fileIds} = {}){
+        if(typeof fileIds === "undefined") throw new Error("Provide fileIds")
+
         const body = {
             fileIds: fileIds
         }
