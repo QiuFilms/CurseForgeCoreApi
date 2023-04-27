@@ -66,7 +66,6 @@ class CurseForgeApi{
             }
         }
 
-        console.log(url.toString());
         return fetch(url.toString(), {method: 'GET', headers: this.#headers})
         .then(async (res) => {
             if(res.status !== 200) throw new Error("Error: Resource does not exist")
