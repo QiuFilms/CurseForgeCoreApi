@@ -186,7 +186,7 @@ class CurseForgeApi{
         })
     }
 
-    async getVersions({version = "", parameters = {}}){
+    async getVersions({version = "", parameters = {}} = {}){
         const url = new URL(`/v1/minecraft/version/${version}`, this.baseUrl)
 
         for (const [key, value] of Object.entries(parameters)) {
